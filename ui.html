@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@200&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            font-family: 'Exo 2', sans-serif;
+        }
+
+        .hide {
+            display: none;
+        }
+
+        .car,.enemy {
+            width: 50px;
+            height: 70px;
+            background: red;
+            position: absolute;
+            bottom: 600px;
+        }
+        .lines{
+            width: 10px;
+            height: 100px;
+            background: #f8ff00;
+            position: absolute;
+            margin-left: 195px;
+        }
+        .displaygame{
+            width:400px;
+            height: 100vh;
+            background: #2d3436 ;
+            position: relative;
+            margin: auto;
+        }
+
+        .score{
+            position: absolute;
+            top: 15px;
+            left: 30px;
+            width: 320px;
+            line-height: 67px;
+            border: red;
+            background: pink;
+            text-align: center;
+            color: purple;
+            font-size: 1cm;
+            box-shadow: 0 5px 5px #777;
+
+        }
+
+        .popup{
+
+            position: absolute;
+            background-color: pink;
+            left: 50%;
+            top: 50%;
+            color: purple;
+            padding: 15px;
+            transform: translate(-50%,-50%);
+            z-index: 1;
+            text-align: center;
+            margin: auto;
+            font-weight: bold;
+            width: 50%;
+            cursor: pointer;
+            letter-spacing: 3;
+            word-spacing: 5;
+            line-height: 30px;
+            text-transform: uppercase;
+            box-shadow: 0 5px 5px #777;
+
+        }
+
+        .cargame{
+            background-color: rgb(212, 102, 102);
+        
+        }
+        .song{
+            top:100px;
+            left: 20px;
+            width: 100px;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="cargame">
+        <audio controls autoplay class="song">
+            <source src="horse.ogg" type="audio/ogg">
+            <source src="horse.mp3" type="audio/mpeg">
+          Your browser does not support the audio element.
+          </audio>
+          
+        <div class="score">
+        </div>
+
+        <div class="popup">
+            <p>click here to start the game 
+                    <br>
+                Use Arrow keys to move up , down ,left and Right
+                    <br>
+                Want to score more Maintain social distancing with other blocks
+
+            </p>
+        </div>
+        <div class="displaygame ">
+        </div>
+    </div>
+
+    <script>
+        const score = document.querySelector('.score');
+        const popup = document.querySelector('.popup');
+        const displaygame = document.querySelector('.displaygame');
+        popup.addEventListener('click', start);
+        let player = {score:0};
+        let keys = { ArrowUp: false, ArrowRight: false, ArrowLeft: false ,ArrowDown: false}
+        document.addEventListener('keydown', KeyDown);
+        document.addEventListener('keyup', KeyUp);
+
+        function KeyDown(e) {
+            e.preventDefault();
+            keys[e.key] = true;
+
+        }
+        function KeyUp(e) {
+            e.preventDefault();
+            keys[e.key] = false;
+        }
+
+        function endgame(){
+            player.start=false;
+            popup.classList.remove('hide');
+            popup.innerHTML = "  <p>Game Over   &#128542   </p><br> your score is " + player.score  +"<br>press here to restart the game";
+        }
+
+
+        function collide(a,b){
+            aRect=a.getBoundingClientRect();
+            bRect=b.getBoundingClientRect();
+
+            return !((aRect.bottom<bRect.top) ||(aRect.top>bRect.bottom) || (aRect.right<bRect.left) || (aRect.left>bRect.right))
+        }
+
+
+        function movelines(){
+            let lines=document.querySelectorAll('.lines');
+            lines.forEach(function(item){
+                    if(item.y>=750){
+                        item.y=0;
+                    }
+                    item.y+=5;
+                    item.style.top=item.y+'px';
+
+            })
+        }
+        function moveenemy(car){
+            let enemy=document.querySelectorAll('.enemy');
+            // let car=document.querySelector('.car');
+
+            enemy.forEach(function(item){
+
+                if(collide(car,item)){
+                        endgame();
+                }
+                    if(item.y>=750){
+                        item.y=-350;
+                   item.style.left=Math.floor(Math.random()*350)+"px";
+
+                    }
+                    item.y+=5;
+                    item.style.top=item.y+'px';
+
+            })
+        }
+        function gameplay() {
+            let car = document.querySelector('.car');
+            let road=displaygame.getBoundingClientRect();
+            // console.log(road);
+            if (player.start) {
+
+                movelines();
+                moveenemy(car);
+                if(keys.ArrowUp && player.y < road.top+430) {player.y+=5}
+                if(keys.ArrowDown && player.y > 0) {player.y-=5}
+                if(keys.ArrowLeft && player.x>0) {player.x-=5}
+                if(keys.ArrowRight && player.x<(road.width-50)) {player.x+=5}
+                car.style.left=player.x+"px"; 
+                car.style.bottom=player.y+"px";
+                window.requestAnimationFrame(gameplay);
+                console.log( player.score++);
+                player.score++; 
+                let ps=player.score-2;
+                score.innerText="Your  Score : " +ps;
+
+            }
+        }
+        function start() {
+            // displaygame.classList.remove('hide');
+            popup.classList.add('hide');
+            displaygame.innerHTML="";
+            player.start = true;
+            player.score=0;
+            window.requestAnimationFrame(gameplay);
+            
+            for(x=0;x<5;x++) {
+            
+            let roadline=document.createElement('div');
+            roadline.setAttribute('class','lines');
+            roadline.y=x*150; 
+            roadline.style.top=roadline.y+'px';
+            displaygame.appendChild(roadline);
+        }
+
+        let car = document.createElement('div');
+        car.setAttribute('class', 'car');
+        displaygame.appendChild(car);
+        player.x=car.offsetLeft;
+        player.y=car.offsetTop;
+
+
+        for(x=0;x<3;x++) {
+            
+            let enemycar=document.createElement('div');
+            enemycar.setAttribute('class','enemy');
+            enemycar.y=((x+1)*350)* -1; 
+            enemycar.style.top=enemycar.y+'px';
+            enemycar.style.background='blue';
+            enemycar.style.left=Math.floor(Math.random()*350)+"px";
+            displaygame.appendChild(enemycar);
+        }
+    }
+
+    </script>
+
+</body>
+
+</html>
